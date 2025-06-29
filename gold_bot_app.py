@@ -11,13 +11,13 @@ st.subheader(":mag: تحليل ذكي لحركة الذهب باستخدام ا�
 # 📈 جلب البيانات
 @st.cache_data
 def load_data():
-    df = yf.download('GC=F', period='6mo', interval='1d')
-    df.dropna(inplace=True)
-    df['SMA_10'] = df['Close'].rolling(window=10).mean()
-    df['RSI'] = ta.momentum.RSIIndicator(close=df['Close']).rsi()
-    macd = ta.trend.MACD(close=df['Close'])
-    df['MACD'] = macd.macd()
-    df['MACD_signal'] = macd.macd_signal()
+df = yf.download('GC=F', period='6mo', interval='1d')
+df.dropna(inplace=True)
+df['SMA_10'] = df['Close'].rolling(window=10).mean()
+df['RSI'] = ta.momentum.RSIIndicator(close=df['Close']).rsi()
+macd = ta.trend.MACD(close=df['Close'])
+df['MACD'] = macd.macd()
+df['MACD_signal'] = macd.macd_signal()
     return df
 
 df = load_data()
@@ -25,11 +25,11 @@ df = load_data()
 # 🌍 معلومات الرسم البياني
 fig = go.Figure()
 fig.add_trace(go.Candlestick(x=df.index,
-                             open=df['Open'],
-                             high=df['High'],
-                             low=df['Low'],
-                             close=df['Close'],
-                             name='Candlestick'))
+open=df['Open'],
+high=df['High'],
+low=df['Low'],
+close=df['Close'],
+name='Candlestick'))
 fig.add_trace(go.Scatter(x=df.index, y=df['SMA_10'], line=dict(color='blue', width=1), name='SMA 10'))
 fig.update_layout(title='رسم شموع للذهب + متوسط 10 أيام', xaxis_title='Date', yaxis_title='Price', template='plotly_dark')
 st.plotly_chart(fig, use_container_width=True)
