@@ -1,46 +1,54 @@
 import yfinance as yf
 import pandas as pd
-import streamlit as st
-from ta.trend import MACD
-from ta.momentum import RSIIndicator
+import streamlit as st from ta.trend 
+import MACD from ta.momentum 
+import RSIIndicator
 import plotly.graph_objects as go
 
 st.set_page_config(page_title="🪙 Gold Swing Bot", layout="centered")
-
 st.title("🪙 Gold Swing Bot")
-st.markdown("### 🔍 تحليل ذكي لحركة الذهب باستخدام المؤشرات الفنية ونموذج التعلم الآلي")
+st.markdown("### 🔍 تحليل ذكي لحركة الذهب باستخدام المؤشرات الفنية")
 
-# تحميل بيانات الذهب من Yahoo Finance
 df = yf.download('GC=F', period='6mo', interval='1d')
-# التأكد من وجود البيانات
+
 if df.empty:
-    st.error("فشل تحميل بيانات الذهب.")
+    st.error("❌ فشل تحميل بيانات الذهب. تأكد من اتصال الإنترنت.")
     st.stop()
 
-# حساب SMA لمدة 10 أيام
 df['SMA_10'] = df['Close'].rolling(window=10).mean()
-
-# حساب مؤشر القوة النسبية RSI
-rsi = RSIIndicator(close=df['Close'])
-df['RSI'] = rsi.rsi()
-
-# حساب مؤشر MACD
+df['RSI'] = RSIIndicator(close=df['Close']).rsi()
 macd = MACD(close=df['Close'])
-df['MACD'] = macd.macd().squeeze()
-df['MACD_signal'] = macd.macd_signal().squeeze()
+df['MACD'] = macd.macd()
+df['MACD_signal'] = macd.macd_signal()
+df.dropna(inplace=True)
 
-# عرض مخطط الشموع اليابانية لآخر 10 أيام
-latest_data = df.tail(10)
+latest = df.iloc[-1]
+
+if latest['RSI'] < 30 and latest['MACD'] > latest['MACD_signal']:
+    recommendation = "🟢 **شراء** - السعر منخفض وإشارة صعود"
+elif latest['RSI'] > 70 and latest['MACD'] < latest['MACD_signal']:
+    recommendation = "🔴 **بيع** - السعر مرتفع وإشارة هبوط"
+else:
+    recommendation = "🟡 **انتظار** - لا توجد إشارة واضحة حالياً"
+
+st.subheader("📌 توصية التداول:")
+st.markdown(f"### {recommendation}")
+
+st.subheader("📊 الرسم البياني:")
 fig = go.Figure(data=[go.Candlestick(
-    x=latest_data.index,
-    open=latest_data['Open'],
-    high=latest_data['High'],
-    low=latest_data['Low'],
-    close=latest_data['Close']
+    x=df.tail(10).index,
+    open=df.tail(10)['Open'],
+    high=df.tail(10)['High'],
+    low=df.tail(10)['Low'],
+    close=df.tail(10)['Close']
 )])
-fig.update_layout(title='📊 رسم شموع الذهب - آخر 10 أيام', xaxis_title='التاريخ', yaxis_title='السعر')
-st.plotly_chart(fig)
+fig.update_layout(
+    title="رسم الشموع الذهب - آخر 10 أيام",
+    xaxis_title="التاريخ",
+    yaxis_title="السعر (دولار)",
+    height=500
+)
+st.plotly_chart(fig, use_container_width=True)
 
-# عرض جدول المؤشرات
-with st.expander("📈 المؤشرات الفنية"):
+with st.expander("📈 المؤشرات الفنية لآخر 10 أيام"):
     st.dataframe(df.tail(10)[['Close', 'SMA_10', 'RSI', 'MACD', 'MACD_signal']])
