@@ -10,23 +10,32 @@ st.write("نظام ذكي لتوقع حركة الذهب بناءً على نم�
 # تحميل بيانات الذهب
 data = yf.download("XAUUSD=X", period="60d", interval="1d")
 
-# حذف أي بيانات ناقصة
-data.dropna(inplace=True)
+# إزالة الصفوف اللي فيها قيم ناقصة
+data = data.dropna()
 
-# إنشاء الهدف (True لو أغلق السعر أعلى من اليوم السابق)
+# حذف عمود Volume لأنه غالبًا فيه مشاكل
+if 'Volume' in data.columns:
+    data = data.drop(columns=['Volume'])
+
+# إنشاء عمود الهدف
 data['Target'] = data['Close'].shift(-1) > data['Close']
-data.dropna(inplace=True)
+data = data.dropna()
 
-# اختيار الخصائص - بدون Volume لأنها فاضية
+# تحديد الميزات
 features = ['Open', 'High', 'Low', 'Close']
 X = data[features]
 y = data['Target']
+
+# تأكد أن البيانات أرقام فقط
+X = X.apply(pd.to_numeric, errors='coerce')
+X = X.dropna()
+y = y.loc[X.index]
 
 # تدريب النموذج
 model = RandomForestClassifier()
 model.fit(X, y)
 
-# توقع على آخر صف
+# التوقع باستخدام آخر صف
 latest_data = X.iloc[-1:]
 prediction = model.predict(latest_data)[0]
 
