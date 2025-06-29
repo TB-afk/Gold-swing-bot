@@ -6,3 +6,5 @@ yfinance
 pandas
 numpy
 scikit-learn
+ta
+plotly
