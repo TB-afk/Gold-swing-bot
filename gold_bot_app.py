@@ -1,41 +1,55 @@
 import streamlit as st
-import pandas as pd
 import yfinance as yf
+import pandas as pd
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
-st.set_page_config(page_title="Gold Swing Bot", page_icon="📈")
-st.title("📊 Gold Swing Bot")
-st.write("نظام ذكي لتوقع حركة الذهب بناءً على نماذج تحليلية.")
+# تحميل البيانات من yfinance
+df = yf.download('GC=F', period='6mo', interval='1d')
 
-# تحميل بيانات الذهب
-data = yf.download("XAUUSD=X", period="60d", interval="1d")
-# إنشاء عمود الهدف
-data['Target'] = data['Close'].shift(-1) > data['Close']
-data = data.dropna()
+# التأكد من عدم وجود بيانات ناقصة
+df.dropna(inplace=True)
 
-# تحديد الميزات
-features = ['Open', 'High', 'Low', 'Close']
-X = data[features]
-y = data['Target']
+# إنشاء أعمدة فنية بسيطة (مؤشرات)
+df['SMA_5'] = df['Close'].rolling(window=5).mean()
+df['SMA_10'] = df['Close'].rolling(window=10).mean()
+df['Target'] = np.where(df['Close'].shift(-1) > df['Close'], 1, 0)
 
-# تأكد أن البيانات أرقام فقط
-X = X.apply(pd.to_numeric, errors='coerce')
-X = X.dropna()
-y = y.loc[X.index]
+# تنظيف البيانات
+df.dropna(inplace=True)  # للتأكد من عدم وجود NaN
+
+# اختيار الأعمدة للمدخلات والمخرجات
+X = df[['SMA_5', 'SMA_10']]
+y = df['Target']
+
+# التحقق من التناسق
+X = X.select_dtypes(include=[np.number])
+y = y[:len(X)]
+
+# تقسيم البيانات
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # تدريب النموذج
 model = RandomForestClassifier()
-model.fit(X, y)
+model.fit(X_train, y_train)
 
-# التوقع باستخدام آخر صف
-latest_data = X.iloc[-1:]
-prediction = model.predict(latest_data)[0]
+# التنبؤ
+prediction = model.predict(X_test)
 
-# عرض النتيجة
-st.subheader("🔮 التوقع:")
-if prediction:
-    st.success("📈 من المتوقع صعود الذهب خلال اليوم القادم.")
-else:
-    st.error("📉 من المتوقع هبوط الذهب خلال اليوم القادم.")
+# الواجهة في Streamlit
+st.title("📈 Gold Swing Bot")
+st.write("نظام ذكي لتوقّع حركة الذهب بناءً على مؤشرات بسيطة (SMA)")
 
-st.caption("جميع الحقوق محفوظة © 2025")
+# عرض آخر البيانات والتوقّعات
+st.subheader("آخر بيانات الذهب")
+st.line_chart(df['Close'])
+
+# زر للتوقّع
+if st.button("تحليل السوق الآن"):
+    current = df[['SMA_5', 'SMA_10']].iloc[-1:]
+    result = model.predict(current)[0]
+    if result == 1:
+        st.success("✅ التوقع: السعر سيرتفع")
+    else:
+        st.error("❌ التوقع: السعر سينخفض")
