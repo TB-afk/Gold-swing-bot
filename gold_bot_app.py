@@ -3,7 +3,6 @@ import pandas as pd
 import yfinance as yf
 import ta
 import plotly.graph_objs as go
-
 # 🪙 عنوان التطبيق
 st.set_page_config(page_title="توقعات سعر الذهب", layout="wide")
 st.title(":moneybag: Gold Swing Bot")
