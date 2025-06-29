@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
 import yfinance as yf
-from sklearn.ensemble 
-import 
-RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 st.set_page_config(page_title="Gold Swing Bot", page_icon="📈")
 st.title("📊 Gold Swing Bot")
