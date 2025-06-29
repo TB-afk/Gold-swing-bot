@@ -1,7 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import streamlit as st
-from MAC import ta.momentum 
+from MACD import ta.momentum 
 import RSIIndicator
 import plotly.graph_objects as go
 
