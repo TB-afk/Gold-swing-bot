@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
-import streamlit as st from ta.trend 
+import streamlit as st
+ from ta.trend 
 import MACD from ta.momentum 
 import RSIIndicator
 import plotly.graph_objects as go
