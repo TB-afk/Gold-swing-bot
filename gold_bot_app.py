@@ -22,8 +22,8 @@ df['SMA_5'] = df['Close'].rolling(window=5).mean()
 df['SMA_10'] = df['Close'].rolling(window=10).mean()
 
 # RSI وMACD
-df['RSI'] = ta.momentum.RSIIndicator(df['Close']).rsi()
-macd = ta.trend.MACD(df['Close'])
+df['RSI'] = ta.momentum.RSIIndicator(close=df['Close']).rsi()
+macd = ta.trend.MACD(close=df['Close'])
 df['MACD'] = macd.macd()
 df['MACD_signal'] = macd.macd_signal()
 
