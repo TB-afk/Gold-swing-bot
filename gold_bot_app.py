@@ -9,14 +9,6 @@ st.write("نظام ذكي لتوقع حركة الذهب بناءً على نم�
 
 # تحميل بيانات الذهب
 data = yf.download("XAUUSD=X", period="60d", interval="1d")
-
-# إزالة الصفوف اللي فيها قيم ناقصة
-data = data.dropna()
-
-# حذف عمود Volume لأنه غالبًا فيه مشاكل
-if 'Volume' in data.columns:
-    data = data.drop(columns=['Volume'])
-
 # إنشاء عمود الهدف
 data['Target'] = data['Close'].shift(-1) > data['Close']
 data = data.dropna()
